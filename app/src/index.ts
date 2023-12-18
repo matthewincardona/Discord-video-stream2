@@ -3,6 +3,13 @@ import {
   StageChannel,
   VoiceBasedChannel,
 } from "discord.js-selfbot-v13";
+import { launch, getStream } from "puppeteer-stream";
+import config from "./config.json";
+import { Readable } from "stream";
+import { executablePath } from "puppeteer";
+import * as fs from "fs";
+const { DateTime } = require("luxon");
+
 import {
   command,
   streamLivestreamVideo,
@@ -13,16 +20,12 @@ import {
   inputHasAudio,
   Streamer,
 } from "@dank074/discord-video-stream";
-import { launch, getStream } from "puppeteer-stream";
-import config from "./config.json";
-import { Readable } from "stream";
-import { executablePath } from "puppeteer";
 require("dotenv").config();
-import * as fs from "fs";
-const { DateTime } = require("luxon");
 
 const streamer = new Streamer(new Client());
+const scheduleFilePath = "data/schedule.json";
 
+// Set stream options
 setStreamOpts({
   width: config.streamOpts.width,
   height: config.streamOpts.height,
@@ -33,10 +36,25 @@ setStreamOpts({
   video_codec: config.streamOpts.videoCodec === "H264" ? "H264" : "VP8",
 });
 
-// ready event
-streamer.client.on("ready", () => {
-  console.log(`--- ${streamer.client.user.tag} is ready ---`);
-});
+// Function to write data to the JSON file
+const writeScheduleToJson = (schedule: Schedule): void => {
+  const jsonContent = JSON.stringify(schedule, null, 2);
+  fs.writeFileSync(scheduleFilePath, jsonContent);
+  console.log("Schedule has been written to local.");
+};
+
+// Function to read data from the JSON file
+const readScheduleFromJson = (): Schedule | null => {
+  try {
+    const data = fs.readFileSync(scheduleFilePath, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    console.error("Error reading schedule from the file:", error);
+    return null;
+  }
+};
+
+const readSchedule = readScheduleFromJson();
 
 interface Schedule {
   msg: any;
@@ -45,9 +63,6 @@ interface Schedule {
   videoUrl: string;
 }
 
-const scheduleFilePath = "data/schedule.json";
-const readSchedule = readScheduleFromJson();
-
 if (readSchedule) {
   const {
     msg: storedMsg,
@@ -55,7 +70,9 @@ if (readSchedule) {
     targetDateTime: storedTargetDateTime,
     videoUrl: storedVideoUrl,
   } = readSchedule;
-  console.log("Found stored schedule:", storedTargetDateTime, storedVideoUrl);
+  console.log(
+    `Found stored schedule: ${storedTargetDateTime} ${storedVideoUrl}`
+  );
 
   const now: Date = new Date();
   // Make sure storedTargetDateTime is a Date object
@@ -63,7 +80,7 @@ if (readSchedule) {
 
   // Check if this schedule has already passed
   if (targetDateTime.getTime() > now.getTime()) {
-    var millisTillTime: number = targetDateTime.getTime() - now.getTime();
+    let millisTillTime: number = targetDateTime.getTime() - now.getTime();
     if (millisTillTime < 0) {
       millisTillTime += 86400000;
     }
@@ -95,23 +112,10 @@ if (readSchedule) {
   console.log("No schedule found in the file.");
 }
 
-// Function to write data to the JSON file
-function writeScheduleToJson(schedule: Schedule): void {
-  const jsonContent = JSON.stringify(schedule, null, 2);
-  fs.writeFileSync(scheduleFilePath, jsonContent);
-  console.log("Schedule has been written to local.");
-}
-
-// Function to read data from the JSON file
-function readScheduleFromJson(): Schedule | null {
-  try {
-    const data = fs.readFileSync(scheduleFilePath, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Error reading schedule from the file:", error);
-    return null;
-  }
-}
+// ready event
+streamer.client.on("ready", () => {
+  console.log(`--- ${streamer.client.user.tag} is ready ---`);
+});
 
 // message event
 streamer.client.on("messageCreate", async (msg) => {
@@ -155,23 +159,17 @@ streamer.client.on("messageCreate", async (msg) => {
 
     const userMsgs = msg.content.split(" ");
     const videoUrl = userMsgs[1];
-    let date, time;
 
     // check if the user specified a date. if not, assume they're referring to the current day
-    if (userMsgs[3]) {
-      date = userMsgs[2];
-      time = userMsgs[3];
-    } else {
-      date = DateTime.local().toISODate();
-      time = userMsgs[2];
-      console.log("No date specified, will play at", date, time);
-    }
+    const [date, time] = userMsgs[3]
+      ? [userMsgs[2], userMsgs[3]]
+      : [DateTime.local().toISODate(), userMsgs[2]];
 
     const now: Date = new Date();
     const targetDateTime = DateTime.fromSQL(date + " " + time).toJSDate();
-    console.log("'" + videoUrl + "' will play at ", targetDateTime + ".");
+    console.log("'" + videoUrl + "' will play at", targetDateTime + ".");
 
-    const schedule: Schedule = { msg, channel, targetDateTime, videoUrl };
+    const schedule = { msg, channel, targetDateTime, videoUrl };
     writeScheduleToJson(schedule);
 
     var millisTillTime: number = targetDateTime.getTime() - now.getTime();

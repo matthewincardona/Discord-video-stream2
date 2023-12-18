@@ -2,16 +2,16 @@
   "msg": {
     "channelId": "1072355626358947900",
     "guildId": "926300352494587924",
-    "id": "1180386571749437521",
+    "id": "1183656160700682300",
     "position": null,
-    "createdTimestamp": 1701496489227,
+    "createdTimestamp": 1702276019979,
     "type": "DEFAULT",
     "system": false,
-    "content": "$schedule-live media/regular-show.mp4 00:56:00",
+    "content": "$schedule-live media/scott-pilgrim-ep6.mp4 01:28:00",
     "authorId": "628084457433202688",
     "pinned": false,
     "tts": false,
-    "nonce": "1180386571103240192",
+    "nonce": "1183656159819595776",
     "embeds": [],
     "components": [],
     "attachments": [],
@@ -33,7 +33,7 @@
     "flags": 0,
     "reference": null,
     "interaction": null,
-    "cleanContent": "$schedule-live media/regular-show.mp4 00:56:00"
+    "cleanContent": "$schedule-live media/scott-pilgrim-ep6.mp4 01:28:00"
   },
   "channel": {
     "type": "GUILD_VOICE",
@@ -44,18 +44,18 @@
     "messages": [],
     "nsfw": false,
     "interactions": [],
-    "id": "926300352494587930",
+    "id": "1092213284268146698",
     "flags": 0,
-    "name": "purpel mirror",
-    "rawPosition": 1,
-    "bitrate": 63688,
+    "name": "working birds",
+    "rawPosition": 3,
+    "bitrate": 64000,
     "rtcRegion": null,
     "userLimit": 0,
     "videoQualityMode": null,
-    "lastMessageId": "1180366761997119498",
+    "lastMessageId": "1181061790826766347",
     "rateLimitPerUser": 0,
-    "createdTimestamp": 1640917613863
+    "createdTimestamp": 1680474339311
   },
-  "targetDateTime": "2023-12-02T05:56:00.000Z",
-  "videoUrl": "media/regular-show.mp4"
+  "targetDateTime": "2023-12-11T06:28:00.000Z",
+  "videoUrl": "media/scott-pilgrim-ep6.mp4"
 }
